@@ -1,11 +1,13 @@
 import { t } from '../../../shared/i18n';
-import type { SetupDescriptor } from '../../../shared/setup/setup';
+import type { FoundService, SetupDescriptor } from '../../../shared/setup/setup';
 import type { MediaProvider } from '../domain/media';
 import type { MediaUseCases } from '../usecase/mediaUseCases';
 
 /** The setup assistant of the media server widget (#618), as data. */
-export function mediaSetup(media: MediaUseCases): SetupDescriptor {
+export function mediaSetup(media: MediaUseCases, discover?: () => Promise<FoundService[]>): SetupDescriptor {
   return {
+    // Only Jellyfin is found; the provider choice stays on its first option.
+    discover,
     service: 'Jellyfin / Plex',
     fields: [
       {

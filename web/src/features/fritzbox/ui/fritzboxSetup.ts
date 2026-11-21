@@ -1,5 +1,5 @@
 import { t } from '../../../shared/i18n';
-import type { SetupDescriptor } from '../../../shared/setup/setup';
+import type { FoundService, SetupDescriptor } from '../../../shared/setup/setup';
 import type { FritzBoxUseCases } from '../usecase/fritzboxUseCases';
 
 /** The web interface of the box: same host as TR-064, default port. */
@@ -17,8 +17,13 @@ function webInterface(address: string): string | null {
  * widget works with UPnP alone, so its login is optional; the call list
  * needs a FRITZ!Box user.
  */
-export function fritzboxSetup(fritzbox: FritzBoxUseCases, calls: boolean): SetupDescriptor {
+export function fritzboxSetup(
+  fritzbox: FritzBoxUseCases,
+  calls: boolean,
+  discover?: () => Promise<FoundService[]>,
+): SetupDescriptor {
   return {
+    discover,
     service: 'FRITZ!Box',
     fields: [
       {

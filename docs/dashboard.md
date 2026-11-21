@@ -263,14 +263,27 @@ the place to change a connection later.
 
 Waylight looks only when a setup opens, never in the background. It checks
 Docker containers whose image belongs to the service (when the docker
-module can read the Docker API), the names the service usually has in a
-home network such as `homeassistant.local`, and the service's default port
-on the gateway. Only private addresses (RFC 1918, ULA) that `ALLOWED_CIDRS`
+module can read the Docker API), services that announce themselves in the
+local network by mDNS / DNS-SD (Home Assistant as `_home-assistant._tcp`),
+the names the service usually has in a home network such as
+`homeassistant.local`, and the service's default port on the gateway. Only private addresses (RFC 1918, ULA) that `ALLOWED_CIDRS`
 also allows are tried, on a fixed port per service and at most twelve
 requests per search; ports are never scanned. Each address must answer like
 the service (Immich's ping, Home Assistant's manifest, Nextcloud's
 `status.php`) before it is offered. Results are kept for three minutes and
-not stored. Discovery in the local network by mDNS is not part of this yet.
+not stored.
+
+For mDNS Waylight sends one query per service type and search over IPv4
+and collects answers for about a second; it does not listen on port 5353
+or announce anything. Multicast only reaches Waylight when its container
+uses the host network (`network_mode: host`) or runs outside Docker; in a
+bridge network the other sources still work.
+
+Besides Immich, Home Assistant and Nextcloud, the setup finds the
+FRITZ!Box (its TR-064 description on port 49000), Jellyfin (its public
+system info), Grafana (its health check) and AdGuard Home (its login page).
+Plex, Pi-hole, Proxmox VE, the *arr apps and Speedtest Tracker are entered
+by hand.
 
 ## What needs your attention
 

@@ -94,3 +94,12 @@ func (m *Module) CompactStateFor(ctx context.Context, params url.Values) (kernel
 
 // CompactParams implements modules.CompactParamProvider.
 func (m *Module) CompactParams() []string { return []string{"provider"} }
+
+// Discovery implements modules.Discoverable (#627) for AdGuard Home, whose
+// login page is public; Pi-hole is entered by hand.
+func (m *Module) Discovery() modules.DiscoverySpec {
+	return modules.DiscoverySpec{
+		Service: "AdGuard Home", Images: []string{"adguardhome"}, Hostnames: []string{"adguard", "adguardhome"},
+		Ports: []int{3000, 80}, ProbePath: "/login.html", ProbeContains: "AdGuard Home",
+	}
+}

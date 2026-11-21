@@ -1,10 +1,14 @@
 import { t } from '../../../shared/i18n';
-import type { SetupDescriptor } from '../../../shared/setup/setup';
+import type { FoundService, SetupDescriptor } from '../../../shared/setup/setup';
 import type { GrafanaUseCases } from '../usecase/grafanaUseCases';
 
 /** The setup assistant of the Grafana widgets (#618), as data. */
-export function grafanaSetup(grafana: GrafanaUseCases): SetupDescriptor {
+export function grafanaSetup(
+  grafana: GrafanaUseCases,
+  discover?: () => Promise<FoundService[]>,
+): SetupDescriptor {
   return {
+    discover,
     service: 'Grafana',
     fields: [
       {

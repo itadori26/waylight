@@ -1,6 +1,7 @@
 <script lang="ts">
   import SetupInPlace from '../../../shared/setup/SetupInPlace.svelte';
   import { adguardSetup } from './adguardSetup';
+  import type { FoundService } from '../../../shared/setup/setup';
   import { usePolling } from '../../../shared/refresh';
   import { t } from '../../../shared/i18n';
   import { ApiError, errorMessage } from '../../../shared/api-client/http';
@@ -20,11 +21,13 @@
   interface Props {
     adguard: AdGuardUseCases;
     config: Record<string, unknown>;
+    /** AdGuard Home found in the home network for the setup (#627). */
+    discover?: () => Promise<FoundService[]>;
   }
-  let { adguard, config }: Props = $props();
+  let { adguard, config, discover }: Props = $props();
   const provider = $derived(parseWidgetConfig(config).provider);
   const poll = usePolling();
-  const setup = $derived(adguardSetup(adguard, provider));
+  const setup = $derived(adguardSetup(adguard, provider, discover));
   // Bumped after the setup assistant saved, so the effect loads again.
   let reload = $state(0);
 

@@ -78,3 +78,12 @@ func (m *Module) ConnectionStatus(ctx context.Context) modules.ConnectionStatus 
 	_, err := m.uc.Alerts(ctx)
 	return modules.StatusOf(err, domain.ErrNotConfigured)
 }
+
+// Discovery implements modules.Discoverable (#627): Grafana answers its
+// health check without a token.
+func (m *Module) Discovery() modules.DiscoverySpec {
+	return modules.DiscoverySpec{
+		Service: "Grafana", Images: []string{"grafana"}, Hostnames: []string{"grafana", "grafana.local"},
+		Ports: []int{3000}, ProbePath: "/api/health", ProbeContains: `"database"`,
+	}
+}

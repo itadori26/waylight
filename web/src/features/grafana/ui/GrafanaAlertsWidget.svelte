@@ -1,6 +1,7 @@
 <script lang="ts">
   import SetupInPlace from '../../../shared/setup/SetupInPlace.svelte';
   import { grafanaSetup } from './grafanaSetup';
+  import type { FoundService } from '../../../shared/setup/setup';
   import { usePolling } from '../../../shared/refresh';
   import { intlLocale, t } from '../../../shared/i18n';
   import { ApiError, errorMessage } from '../../../shared/api-client/http';
@@ -9,9 +10,11 @@
 
   /** Props of the Grafana alerts widget (#574). */
   interface Props {
+    /** Grafana found in the home network for the setup (#627). */
+    discover?: () => Promise<FoundService[]>;
     grafana: GrafanaUseCases;
   }
-  let { grafana }: Props = $props();
+  let { grafana, discover }: Props = $props();
   const poll = usePolling();
 
   const POLL_MS = 60_000;
@@ -30,7 +33,7 @@
       });
   $effect(() => poll(load, POLL_MS));
   // svelte-ignore state_referenced_locally
-  const setup = grafanaSetup(grafana);
+  const setup = grafanaSetup(grafana, discover);
 
   const since = (d: Date) =>
     d.toLocaleString(intlLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });

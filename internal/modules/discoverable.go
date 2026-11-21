@@ -17,6 +17,10 @@ type DiscoverySpec struct {
 	// ProbePath is requested without credentials, and ProbeContains must
 	// appear in the answer, e.g. "/api/server/ping" and "pong".
 	ProbePath, ProbeContains string
+	// ServiceTypes are DNS-SD service types the service announces over
+	// mDNS, e.g. "_home-assistant._tcp" (#627). One query per type is sent
+	// per search; the answers go through the same address rules and probe.
+	ServiceTypes []string
 }
 
 // Discoverable is implemented by modules whose service can be found in the

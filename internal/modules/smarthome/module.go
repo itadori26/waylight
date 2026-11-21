@@ -117,5 +117,6 @@ func (m *Module) Discovery() modules.DiscoverySpec {
 		Service: "Home Assistant", Images: []string{"home-assistant", "homeassistant"},
 		Hostnames: []string{"homeassistant.local", "homeassistant"},
 		Ports:     []int{8123}, ProbePath: "/manifest.json", ProbeContains: "Home Assistant",
+		ServiceTypes: []string{"_home-assistant._tcp"},
 	}
 }

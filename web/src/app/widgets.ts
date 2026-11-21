@@ -326,7 +326,7 @@ const legacyDefinitions: WidgetDefinition[] = [
     compactExample: () => t('compact.example.adguard'),
     view: lazy(
       () => import('../features/adguard/ui/AdGuardWidget.svelte'),
-      (config, c) => ({ config, adguard: c.adguard }),
+      (config, c) => ({ config, adguard: c.adguard, discover: () => c.discovery.find('adguard') }),
     ),
     settings: lazy(
       () => import('../features/adguard/ui/AdGuardWidgetSettings.svelte'),
@@ -368,7 +368,7 @@ const legacyDefinitions: WidgetDefinition[] = [
     icon: 'router',
     view: lazy(
       () => import('../features/fritzbox/ui/FritzBoxWidget.svelte'),
-      (config, c) => ({ config, fritzbox: c.fritzbox }),
+      (config, c) => ({ config, fritzbox: c.fritzbox, discover: () => c.discovery.find('fritzbox') }),
     ),
     settings: lazy(
       () => import('../features/fritzbox/ui/FritzBoxWidgetSettings.svelte'),

@@ -1,6 +1,7 @@
 <script lang="ts">
   import SetupInPlace from '../../../shared/setup/SetupInPlace.svelte';
   import { fritzboxSetup } from './fritzboxSetup';
+  import type { FoundService } from '../../../shared/setup/setup';
   import { usePolling } from '../../../shared/refresh';
   import { t } from '../../../shared/i18n';
   import { ApiError, errorMessage } from '../../../shared/api-client/http';
@@ -13,8 +14,10 @@
   interface Props {
     fritzbox: FritzBoxUseCases;
     config: Record<string, unknown>;
+    /** The FRITZ!Box found in the home network for the setup (#627). */
+    discover?: () => Promise<FoundService[]>;
   }
-  let { fritzbox, config }: Props = $props();
+  let { fritzbox, config, discover }: Props = $props();
   const show = $derived(internetOptions(config));
   const poll = usePolling();
 
@@ -26,7 +29,7 @@
   // Bumped after the setup assistant saved, so the effect loads again.
   let reload = $state(0);
   // svelte-ignore state_referenced_locally
-  const setup = fritzboxSetup(fritzbox, false);
+  const setup = fritzboxSetup(fritzbox, false, discover);
 
   $effect(() => {
     void reload;

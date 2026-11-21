@@ -19,7 +19,7 @@ export const widgets: WidgetDefinition[] = [
     icon: 'activity',
     view: lazy(
       () => import('../../features/media/ui/MediaWidget.svelte'),
-      (config, c) => ({ config, media: c.media }),
+      (config, c) => ({ config, media: c.media, discover: () => c.discovery.find('media') }),
     ),
     settings: lazy(
       () => import('../../features/media/ui/MediaWidgetSettings.svelte'),

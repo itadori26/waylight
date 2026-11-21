@@ -71,3 +71,12 @@ func (m *Module) ConnectionStatus(ctx context.Context) modules.ConnectionStatus 
 	_, err := m.uc.Status(ctx)
 	return modules.StatusOf(err, domain.ErrNotConfigured)
 }
+
+// Discovery implements modules.Discoverable (#627): the box is the
+// gateway or fritz.box, and its TR-064 description is public.
+func (m *Module) Discovery() modules.DiscoverySpec {
+	return modules.DiscoverySpec{
+		Service: "FRITZ!Box", Hostnames: []string{"fritz.box"},
+		Ports: []int{49000}, ProbePath: "/tr64desc.xml", ProbeContains: "AVM",
+	}
+}

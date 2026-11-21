@@ -29,12 +29,13 @@ func New(all []modules.Module, containers Containers, client *http.Client, allow
 		if d, ok := m.(modules.Discoverable); ok {
 			s := d.Discovery()
 			specs[m.Name()] = usecase.Spec{Service: s.Service, Images: s.Images, Hostnames: s.Hostnames,
-				Ports: s.Ports, ProbePath: s.ProbePath, ProbeContains: s.ProbeContains}
+				Ports: s.Ports, ProbePath: s.ProbePath, ProbeContains: s.ProbeContains, ServiceTypes: s.ServiceTypes}
 		}
 	}
 	uc := usecase.New(usecase.Deps{
 		Specs: specs, Containers: containers, Gateway: gateway.DefaultGateway, Resolve: gateway.Resolve,
-		Probe: gateway.NewProber(client).Probe, Allowed: allowed, Clock: clock,
+		Browse: gateway.NewBrowser().Browse,
+		Probe:  gateway.NewProber(client).Probe, Allowed: allowed, Clock: clock,
 	})
 	return &Module{handlers: controller.NewHandlers(uc)}
 }

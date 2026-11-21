@@ -17,6 +17,17 @@ type Spec struct {
 	Images, Hostnames        []string
 	Ports                    []int
 	ProbePath, ProbeContains string
+	// ServiceTypes are DNS-SD types such as "_home-assistant._tcp" (#627).
+	ServiceTypes []string
+}
+
+// Announcement is a service that answered a DNS-SD query over mDNS.
+type Announcement struct {
+	// Instance is the name the service announces, e.g. "Home".
+	Instance string
+	Host     string
+	Addrs    []netip.Addr
+	Port     int
 }
 
 // Container is a Docker container with its exposed TCP ports and addresses.
@@ -27,7 +38,8 @@ type Container struct {
 	Addresses []netip.Addr
 }
 
-// Deps bundles the output ports. Containers, Gateway and Resolve may be nil.
+// Deps bundles the output ports. Containers, Gateway, Resolve and Browse
+// may be nil.
 type Deps struct {
 	Specs map[string]Spec
 	// Containers lists the containers when the docker module is on.
@@ -36,6 +48,9 @@ type Deps struct {
 	// Waylight runs in a container.
 	Gateway func() (netip.Addr, bool)
 	Resolve func(ctx context.Context, host string) ([]netip.Addr, error)
+	// Browse sends one DNS-SD query for a service type on the local
+	// network and returns the answers until ctx ends (#627).
+	Browse func(ctx context.Context, serviceType string) ([]Announcement, error)
 	// Probe requests baseURL+path without credentials and reports whether
 	// the answer contains the marker.
 	Probe   func(ctx context.Context, baseURL, path, contains string) bool
@@ -61,6 +76,11 @@ const (
 	searchTimeout = 6 * time.Second
 	// probeWorkers bounds the probes in flight.
 	probeWorkers = 4
+	// browseTimeout is how long answers to one mDNS query are collected;
+	// responders answer within a few hundred milliseconds.
+	browseTimeout = 1200 * time.Millisecond
+	// maxServiceTypes bounds the mDNS queries one search sends.
+	maxServiceTypes = 3
 )
 
 type entry struct {
@@ -103,8 +123,8 @@ func (u *discovery) Find(ctx context.Context, integration string) ([]domain.Foun
 }
 
 // candidates collects addresses in order of confidence: containers of the
-// service's image, its usual host names, then the default ports on the
-// gateway.
+// service's image, services that announce themselves over mDNS, the usual
+// host names, then the default ports on the gateway.
 func (u *discovery) candidates(ctx context.Context, spec Spec) []domain.Candidate {
 	var out []domain.Candidate
 	gw, haveGW := netip.Addr{}, false
@@ -120,6 +140,7 @@ func (u *discovery) candidates(ctx context.Context, spec Spec) []domain.Candidat
 			}
 		}
 	}
+	out = append(out, u.announced(ctx, spec)...)
 	if u.d.Resolve != nil {
 		for _, host := range spec.Hostnames {
 			addrs, err := u.d.Resolve(ctx, host)
@@ -136,6 +157,36 @@ func (u *discovery) candidates(ctx context.Context, spec Spec) []domain.Candidat
 	if haveGW {
 		for _, p := range spec.Ports {
 			out = append(out, domain.Candidate{Addr: gw, Port: p, Hint: "gateway " + gw.String()})
+		}
+	}
+	return out
+}
+
+// announced asks once per service type who announces it; the answers
+// carry the port, so each address is tried on that port only.
+func (u *discovery) announced(ctx context.Context, spec Spec) []domain.Candidate {
+	if u.d.Browse == nil {
+		return nil
+	}
+	var out []domain.Candidate
+	for i, t := range spec.ServiceTypes {
+		if i == maxServiceTypes {
+			break
+		}
+		bctx, cancel := context.WithTimeout(ctx, browseTimeout)
+		list, err := u.d.Browse(bctx, t)
+		cancel()
+		if err != nil && len(list) == 0 {
+			continue
+		}
+		for _, a := range list {
+			hint := "mDNS " + a.Instance
+			if a.Instance == "" {
+				hint = "mDNS " + a.Host
+			}
+			for _, addr := range a.Addrs {
+				out = append(out, domain.Candidate{Addr: addr, Port: a.Port, Hint: hint})
+			}
 		}
 	}
 	return out

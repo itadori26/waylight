@@ -1,12 +1,18 @@
 import { t } from '../../../shared/i18n';
-import type { SetupDescriptor } from '../../../shared/setup/setup';
+import type { FoundService, SetupDescriptor } from '../../../shared/setup/setup';
 import { type DnsProvider, providerName } from '../domain/adguard';
 import type { AdGuardUseCases } from '../usecase/adguardUseCases';
 
 /** The setup assistant of the DNS filter widget (#618), as data per provider. */
-export function adguardSetup(adguard: AdGuardUseCases, provider: DnsProvider): SetupDescriptor {
+export function adguardSetup(
+  adguard: AdGuardUseCases,
+  provider: DnsProvider,
+  discover?: () => Promise<FoundService[]>,
+): SetupDescriptor {
   const pihole = provider === 'pihole';
   return {
+    // Only AdGuard Home is found in the home network (#627).
+    discover: pihole ? undefined : discover,
     service: providerName(provider),
     fields: [
       {

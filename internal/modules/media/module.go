@@ -57,3 +57,12 @@ func (m *Module) ConnectionStatus(ctx context.Context) modules.ConnectionStatus 
 	_, err := m.uc.Overview(ctx)
 	return modules.StatusOf(err, domain.ErrNotConfigured)
 }
+
+// Discovery implements modules.Discoverable (#627). Only Jellyfin is
+// found: its public system info needs no key; Plex is entered by hand.
+func (m *Module) Discovery() modules.DiscoverySpec {
+	return modules.DiscoverySpec{
+		Service: "Jellyfin", Images: []string{"jellyfin"}, Hostnames: []string{"jellyfin", "jellyfin.local"},
+		Ports: []int{8096}, ProbePath: "/System/Info/Public", ProbeContains: `"ProductName":"Jellyfin Server"`,
+	}
+}

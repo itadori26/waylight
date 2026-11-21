@@ -42,7 +42,7 @@ export const widgets: WidgetDefinition[] = [
     icon: 'gauge',
     view: lazy(
       () => import('../../features/grafana/ui/GrafanaAlertsWidget.svelte'),
-      (_config, c) => ({ grafana: c.grafana }),
+      (_config, c) => ({ grafana: c.grafana, discover: () => c.discovery.find('grafana') }),
     ),
   },
 ];

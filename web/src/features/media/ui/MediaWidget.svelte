@@ -1,6 +1,7 @@
 <script lang="ts">
   import SetupInPlace from '../../../shared/setup/SetupInPlace.svelte';
   import { mediaSetup } from './mediaSetup';
+  import type { FoundService } from '../../../shared/setup/setup';
   import { usePolling } from '../../../shared/refresh';
   import { t } from '../../../shared/i18n';
   import { ApiError, errorMessage } from '../../../shared/api-client/http';
@@ -11,8 +12,10 @@
   interface Props {
     media: MediaUseCases;
     config: Record<string, unknown>;
+    /** Jellyfin found in the home network for the setup (#627). */
+    discover?: () => Promise<FoundService[]>;
   }
-  let { media, config }: Props = $props();
+  let { media, config, discover }: Props = $props();
   const poll = usePolling();
   const cfg = $derived(parseWidgetConfig(config));
 
@@ -32,7 +35,7 @@
       });
   $effect(() => poll(load, POLL_MS));
   // svelte-ignore state_referenced_locally
-  const setup = mediaSetup(media);
+  const setup = mediaSetup(media, discover);
 </script>
 
 {#if unconfigured}

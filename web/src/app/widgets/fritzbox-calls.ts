@@ -19,7 +19,7 @@ export const widgets: WidgetDefinition[] = [
     icon: 'history',
     view: lazy(
       () => import('../../features/fritzbox/ui/FritzBoxCallsWidget.svelte'),
-      (config, c) => ({ config, fritzbox: c.fritzbox }),
+      (config, c) => ({ config, fritzbox: c.fritzbox, discover: () => c.discovery.find('fritzbox') }),
     ),
     settings: lazy(
       () => import('../../features/fritzbox/ui/FritzBoxCallsSettings.svelte'),
